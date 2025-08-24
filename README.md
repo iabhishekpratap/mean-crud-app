@@ -24,6 +24,34 @@ MEAN-CRUD-APP/
 ├── README.md
 └── testing-webhook                    # Test file for webhook (github)
 ```
+## 🚀 Steps of Deployment on the AWS Server
+
+## Provision EC2 Instance
+Launch an EC2 instance in the default VPC. Configure the security group to allow inbound traffic on: 22 (SSH), 80 (HTTP), 443 (HTTPS), 8080 (Backend), 8081 (Application), and 9090 (Jenkins).
+
+## Install Required Software
+Install Jenkins, Docker, and Docker Compose on the EC2 server. Ensure Jenkins is accessible on port 9090.
+
+## Configure Jenkins
+Add necessary plugins in Jenkins. Configure GitHub credentials, Docker Hub credentials, and set up GitHub webhook integration.
+
+## Set Up Docker and Docker Compose
+Prepare the server with Docker and Docker Compose to manage the frontend, backend, and MongoDB containers.
+
+## MongoDB with Persistent Storage
+Run MongoDB in a Docker container using a persistent volume to ensure data is not lost during container updates or redeployment.
+
+## Implement CI Pipeline
+Use the first ```Jenkinsfile.docker-push``` to detect changes in the GitHub repository. If changes occur in the frontend or backend, build the respective container and push it to Docker Hub. After pushing, remove the local image to save space.
+
+## Implement CD Pipeline
+Use the second ```Jenkinsfile.deploy-app``` to monitor Docker Hub. When a new image is pushed (frontend or backend), the pipeline pulls the image, removes any existing containers, and deploys the updated version automatically.
+
+## Configure Nginx for Reverse Proxy
+Use ```nginx-default.conf``` to configure Nginx so the application is accessible directly via the server's IP on ports 80 and 443.
+
+## Access the Application
+After deployment, access the application through the EC2 public IP or domain. Jenkins remains on port 9090 for CI/CD management.
 
 ## 🚀 Local Testing
 
@@ -64,36 +92,6 @@ To stop and remove all containers, networks, and volumes:
 docker-compose down -v
 ```
 
-
-## 🚀 Steps of Deployment on the AWS Server
-
-## Provision EC2 Instance
-Launch an EC2 instance in the default VPC. Configure the security group to allow inbound traffic on: 22 (SSH), 80 (HTTP), 443 (HTTPS), 8080 (Backend), 8081 (Application), and 9090 (Jenkins).
-
-## Install Required Software
-Install Jenkins, Docker, and Docker Compose on the EC2 server. Ensure Jenkins is accessible on port 9090.
-
-## Configure Jenkins
-Add necessary plugins in Jenkins. Configure GitHub credentials, Docker Hub credentials, and set up GitHub webhook integration.
-
-## Set Up Docker and Docker Compose
-Prepare the server with Docker and Docker Compose to manage the frontend, backend, and MongoDB containers.
-
-## MongoDB with Persistent Storage
-Run MongoDB in a Docker container using a persistent volume to ensure data is not lost during container updates or redeployment.
-
-## Implement CI Pipeline
-Use the first ```Jenkinsfile.docker-push``` to detect changes in the GitHub repository. If changes occur in the frontend or backend, build the respective container and push it to Docker Hub. After pushing, remove the local image to save space.
-
-## Implement CD Pipeline
-Use the second Jenkinsfile to monitor Docker Hub. When a new image is pushed (frontend or backend), the pipeline pulls the image, removes any existing containers, and deploys the updated version automatically.
-
-## Configure Nginx for Reverse Proxy
-Use nginx-default.config to configure Nginx so the application is accessible directly via the server's IP on ports 80 and 443.
-
-## Access the Application
-After deployment, access the application through the EC2 public IP or domain. Jenkins remains on port 9090 for CI/CD management.
-
 ## 📊 Screenshots
 
 The repository includes screenshots of:
@@ -105,13 +103,9 @@ The repository includes screenshots of:
 
 ```
 
-## 📝 Additional Notes
-
-- The application runs on port 80 for HTTP access
-- MongoDB data is persisted using Docker volumes
 
 
-## 📞 Support
+##  Support
 
 For issues related to this deployment, please check:
 1. Docker and Docker Compose documentation
