@@ -96,7 +96,7 @@ docker-compose down -v
 
 The repository includes screenshots of:
 - Jenkins pipeline configuration and execution
-![CI Pipeline Run](./screenshots/image_14.png)
+![CI Pipeline Run](./screenshots%20/image_5.png)
 
 
 
