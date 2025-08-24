@@ -96,13 +96,10 @@ docker-compose down -v
 
 The repository includes screenshots of:
 - Jenkins pipeline configuration and execution
+
 - Docker image build and push process
 - Application deployment and working UI
 - Nginx setup and infrastructure details
-
-
-```
-
 
 
 ##  Support
@@ -111,7 +108,5 @@ For issues related to this deployment, please check:
 1. Docker and Docker Compose documentation
 2. Jenkins documentation
 3. MongoDB documentation
-
----
 
 This implementation provides a robust, containerized MEAN stack application with an automated Jenkins CI/CD pipeline for seamless deployments.
