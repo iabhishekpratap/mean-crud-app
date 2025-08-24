@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    // Clone or pull the repository manually
+                    sh """
+                    if [ -d mean-crud-app ]; then
+                        cd mean-crud-app
+                        git reset --hard
+                        git pull origin main
+                    else
+                        git clone https://github.com/iabhishekpratap/mean-crud-app.git
+                    fi
+                    """
+                }
+            }
+        }
+
+        stage('Detect Changes') {
+            steps {
+                script {
+                    def changedFiles = sh(script: 'cd mean-crud-app && git diff --name-only HEAD~1 HEAD || true', returnStdout: true).trim().split("\n")
+                    echo "Changed files: ${changedFiles}"
+                    env.FRONTEND_CHANGED = changedFiles.any { it.startsWith('frontend/') }.toString()
+                    env.BACKEND_CHANGED = changedFiles.any { it.startsWith('backend/') }.toString()
+                }
+            }
+        }
+
+        stage('Build and Push Frontend Docker Image') {
+            when {
+                expression { env.FRONTEND_CHANGED == 'true' }
+            }
+            steps {
+                script {
+                    def imageName = "iapsingh/mean-crud-app-frontend:${env.BUILD_NUMBER}"
+                    withDockerRegistry([credentialsId: 'dockerhub', url: '']) {
+                        sh """
+                        cd mean-crud-app/frontend
+                        docker build -t ${imageName} .
+                        docker push ${imageName}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build and Push Backend Docker Image') {
+            when {
+                expression { env.BACKEND_CHANGED == 'true' }
+            }
+            steps {
+                script {
+                    def imageName = "iapsingh/mean-crud-app-backend:${env.BUILD_NUMBER}"
+                    withDockerRegistry([credentialsId: 'dockerhub', url: '']) {
+                        sh """
+                        cd mean-crud-app/backend
+                        docker build -t ${imageName} .
+                        docker push ${imageName}
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Docker images build & pushed (if folders changed)."
+        }
+    }
+}
