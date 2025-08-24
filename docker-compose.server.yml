@@ -10,7 +10,7 @@ services:
     command: ["--bind_ip_all", "--noauth"]
 
   backend:
-    image: iapsingh/mean-crud-app-backend:REPLACE_TAG
+    image: iapsingh/mean-crud-app-backend:BACKEND_TAG
     container_name: backend
     ports:
       - "8080:8080"
@@ -20,7 +20,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/dd_db
 
   frontend:
-    image: iapsingh/mean-crud-app-frontend:REPLACE_TAG
+    image: iapsingh/mean-crud-app-frontend:FRONTEND_TAG
     container_name: frontend
     ports:
       - "8081:8081"

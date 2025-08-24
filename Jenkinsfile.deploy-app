@@ -24,9 +24,15 @@ pipeline {
         stage('Get Latest Tags') {
             steps {
                 script {
-                    // Get the latest numerical tags
-                    env.LATEST_BACKEND_TAG = sh(script: "curl -s https://hub.docker.com/v2/repositories/${BACKEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
-                    env.LATEST_FRONTEND_TAG = sh(script: "curl -s https://hub.docker.com/v2/repositories/${FRONTEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
+                    env.LATEST_BACKEND_TAG = sh(
+                        script: "curl -s https://hub.docker.com/v2/repositories/${BACKEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'",
+                        returnStdout: true
+                    ).trim()
+
+                    env.LATEST_FRONTEND_TAG = sh(
+                        script: "curl -s https://hub.docker.com/v2/repositories/${FRONTEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'",
+                        returnStdout: true
+                    ).trim()
 
                     echo "Latest backend tag: ${env.LATEST_BACKEND_TAG}"
                     echo "Latest frontend tag: ${env.LATEST_FRONTEND_TAG}"
@@ -37,9 +43,8 @@ pipeline {
         stage('Update Docker Compose Tags') {
             steps {
                 script {
-                    // Replace REPLACE_TAG placeholders in docker-compose file
-                    sh "sed -i 's/REPLACE_TAG/${env.LATEST_BACKEND_TAG}/g' ${COMPOSE_FILE}"
-                    sh "sed -i 's/REPLACE_TAG/${env.LATEST_FRONTEND_TAG}/g' ${COMPOSE_FILE}"
+                    sh "sed -i 's/BACKEND_TAG/${env.LATEST_BACKEND_TAG}/g' ${COMPOSE_FILE}"
+                    sh "sed -i 's/FRONTEND_TAG/${env.LATEST_FRONTEND_TAG}/g' ${COMPOSE_FILE}"
                 }
             }
         }
