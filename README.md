@@ -4,15 +4,6 @@
 
 This project involves containerizing and deploying a full-stack MEAN (MongoDB, Express.js, Angular, Node.js) application using Docker, Docker Compose, and implementing a CI/CD pipeline with Jenkins.
 
-## 🏗️ Architecture
-
-The application consists of:
-- **Frontend**: Angular application served by Nginx
-- **Backend**: Node.js with Express.js API
-- **Database**: MongoDB running in a Docker container
-- **Reverse Proxy**: Nginx routing requests 
-- **CI/CD**: Jenkins pipeline for automated build and deployment
-
 ## 📁 Repository Structure
 
 ```
@@ -26,7 +17,7 @@ MEAN-CRUD-APP/
 │   └── (frontend code)
 │   └── testing-webhook                # test file for webhook frontend
 ├── docker-compose.yml                 # Local development
-├── docker-compose.server.yml          # Server deployment
+├── docker-compose.server.yml          # Server/AWS deployment
 ├── Jenkinsfile.docker-push            # CI: Build and push images to DockerHub
 ├── Jenkinsfile.deploy-app             # CD: Deploy application on server 
 ├── nginx-default.conf                 # Nginx reverse proxy config file
@@ -34,77 +25,74 @@ MEAN-CRUD-APP/
 └── testing-webhook                    # Test file for webhook (github)
 ```
 
-## 🚀 Quick Start
+## 🚀 Local Testing
 
-### Prerequisites
+### 1. Clone the Repository
+```bash
+git clone <https://github.com/iabhishekpratap/mean-crud-app>
+cd mean-crud-app
+```
 
-- Docker and Docker Compose installed on your Ubuntu VM
-- Jenkins installed and configured on your Ubuntu VM
-- Docker Hub account
-- Ubuntu VM (AWS, Azure, or other cloud provider)
+### 3. Build and Start the Application
+```bash
+# Build and start all containers in detached mode
+docker-compose up --build -d
+```
 
-### Deployment Steps
+### 4. Verify Container Status
+```bash
+# Check if all containers are running successfully
+docker-compose ps
+```
+### 5. Access the Application
+Open your web browser and navigate to:
+```
+http://localhost:8081
+```
 
-1. **Clone the repository to your Ubuntu VM:**
-   ```bash
-   git clone <your-repository-url>
-   cd mean-app
-   ```
+### 6. Verify Application Functionality
+Test the CRUD operations:
 
-2. **Set up environment variables:**
-   Create a `.env` file in the root directory with the following variables:
-   ```
-   MONGODB_URI=mongodb://mongodb:27017/mean-app
-   DOCKERHUB_USERNAME=your-dockerhub-username
-   DOCKERHUB_TOKEN=your-dockerhub-token
-   ```
+1. **Create** - Add new records through the UI
+2. **Read** - View the list of existing records
+3. **Update** - Modify existing records
+4. **Delete** - Remove records from the system
 
-3. **Start the application with Docker Compose:**
-   ```bash
-   docker-compose up -d
-   ```
 
-4. **Access the application:**
-   Open your browser and navigate to `http://your-vm-ip-address`
+To stop and remove all containers, networks, and volumes:
+```bash
+docker-compose down -v
+```
 
-## 🔧 Jenkins CI/CD Pipeline
 
-### Pipeline Configuration
+## 🚀 Steps of Deployment on the AWS Server
 
-The Jenkins pipeline is configured through a `Jenkinsfile` that defines the following stages:
+## Provision EC2 Instance
+Launch an EC2 instance in the default VPC. Configure the security group to allow inbound traffic on: 22 (SSH), 80 (HTTP), 443 (HTTPS), 8080 (Backend), 8081 (Application), and 9090 (Jenkins).
 
-1. **Checkout**: Pull the latest code from the repository
-2. **Build Backend**: Build the Node.js backend Docker image
-3. **Build Frontend**: Build the Angular frontend Docker image
-4. **Push Images**: Push images to Docker Hub
-5. **Deploy**: Deploy the application to the Ubuntu VM
+## Install Required Software
+Install Jenkins, Docker, and Docker Compose on the EC2 server. Ensure Jenkins is accessible on port 9090.
 
-### Jenkins Setup
+## Configure Jenkins
+Add necessary plugins in Jenkins. Configure GitHub credentials, Docker Hub credentials, and set up GitHub webhook integration.
 
-1. Install Jenkins on your Ubuntu VM
-2. Install required plugins:
-   - Docker Pipeline
-   - SSH Agent
-   - Git
-3. Configure credentials in Jenkins:
-   - Docker Hub credentials
-   - SSH credentials for deployment server
-4. Create a new pipeline job and point it to the Jenkinsfile in your repository
+## Set Up Docker and Docker Compose
+Prepare the server with Docker and Docker Compose to manage the frontend, backend, and MongoDB containers.
 
-### Automated Deployment
+## MongoDB with Persistent Storage
+Run MongoDB in a Docker container using a persistent volume to ensure data is not lost during container updates or redeployment.
 
-The pipeline automatically:
-- Builds Docker images when changes are pushed to the repository
-- Pushes images to Docker Hub
-- Deploys the application to the production server
-- Restarts containers with the updated images
+## Implement CI Pipeline
+Use the first ```Jenkinsfile.docker-push``` to detect changes in the GitHub repository. If changes occur in the frontend or backend, build the respective container and push it to Docker Hub. After pushing, remove the local image to save space.
 
-## 🌐 Nginx Configuration
+## Implement CD Pipeline
+Use the second Jenkinsfile to monitor Docker Hub. When a new image is pushed (frontend or backend), the pipeline pulls the image, removes any existing containers, and deploys the updated version automatically.
 
-The Nginx reverse proxy is configured to:
-- Serve the Angular frontend on the root path `/`
-- Proxy API requests to the backend service at `/api`
-- Make the application accessible on port 80
+## Configure Nginx for Reverse Proxy
+Use nginx-default.config to configure Nginx so the application is accessible directly via the server's IP on ports 80 and 443.
+
+## Access the Application
+After deployment, access the application through the EC2 public IP or domain. Jenkins remains on port 9090 for CI/CD management.
 
 ## 📊 Screenshots
 
@@ -114,40 +102,14 @@ The repository includes screenshots of:
 - Application deployment and working UI
 - Nginx setup and infrastructure details
 
-## 🛠️ Troubleshooting
 
-### Common Issues
-
-1. **Port conflicts**: Ensure ports 80, 3000, and 27017 are available
-2. **Docker permissions**: Add your user to the docker group: `sudo usermod -aG docker $USER`
-3. **Jenkins permissions**: Ensure Jenkins has permissions to run Docker commands
-4. **MongoDB connection**: Verify the connection string and that MongoDB is running
-
-### Useful Commands
-
-```bash
-# Check running containers
-docker ps
-
-# View logs for a specific container
-docker logs <container_name>
-
-# Restart services
-docker-compose restart
-
-# Rebuild and restart containers
-docker-compose up -d --build
-
-# View Jenkins logs
-sudo tail -f /var/log/jenkins/jenkins.log
 ```
 
 ## 📝 Additional Notes
 
 - The application runs on port 80 for HTTP access
 - MongoDB data is persisted using Docker volumes
-- Environment variables are used for configuration
-- The Jenkins pipeline requires proper credential setup
+
 
 ## 📞 Support
 
