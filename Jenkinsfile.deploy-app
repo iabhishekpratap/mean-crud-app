@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         BACKEND_REPO = 'iapsingh/mean-crud-app-backend'
         FRONTEND_REPO = 'iapsingh/mean-crud-app-frontend'
+        COMPOSE_FILE = "${WORKSPACE}/docker-compose.server.yml"
     }
 
     stages {
@@ -20,42 +21,35 @@ pipeline {
             }
         }
 
-        stage('Check and Deploy Backend') {
+        stage('Get Latest Tags') {
             steps {
                 script {
-                    def latestTag = sh(script: "curl -s https://hub.docker.com/v2/repositories/${BACKEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
-                    echo "Latest backend tag: ${latestTag}"
+                    // Get the latest numerical tags
+                    env.LATEST_BACKEND_TAG = sh(script: "curl -s https://hub.docker.com/v2/repositories/${BACKEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
+                    env.LATEST_FRONTEND_TAG = sh(script: "curl -s https://hub.docker.com/v2/repositories/${FRONTEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
 
-                    def runningDigest = sh(script: "docker inspect --format='{{index .RepoDigests 0}}' backend || echo 'none'", returnStdout: true).trim()
-
-                    def latestDigest = sh(script: "docker pull ${BACKEND_REPO}:${latestTag} | grep Digest | awk '{print \$2}'", returnStdout: true).trim()
-
-                    if (runningDigest != latestDigest) {
-                        echo "New backend image found, redeploying..."
-                        sh "docker compose -f ${WORKSPACE}/docker-compose.server.yml up -d backend"
-                    } else {
-                        echo "Backend image is up-to-date, skipping deployment."
-                    }
+                    echo "Latest backend tag: ${env.LATEST_BACKEND_TAG}"
+                    echo "Latest frontend tag: ${env.LATEST_FRONTEND_TAG}"
                 }
             }
         }
 
-        stage('Check and Deploy Frontend') {
+        stage('Update Docker Compose Tags') {
             steps {
                 script {
-                    def latestTag = sh(script: "curl -s https://hub.docker.com/v2/repositories/${FRONTEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
-                    echo "Latest frontend tag: ${latestTag}"
+                    // Replace REPLACE_TAG placeholders in docker-compose file
+                    sh "sed -i 's/REPLACE_TAG/${env.LATEST_BACKEND_TAG}/g' ${COMPOSE_FILE}"
+                    sh "sed -i 's/REPLACE_TAG/${env.LATEST_FRONTEND_TAG}/g' ${COMPOSE_FILE}"
+                }
+            }
+        }
 
-                    def runningDigest = sh(script: "docker inspect --format='{{index .RepoDigests 0}}' frontend || echo 'none'", returnStdout: true).trim()
-
-                    def latestDigest = sh(script: "docker pull ${FRONTEND_REPO}:${latestTag} | grep Digest | awk '{print \$2}'", returnStdout: true).trim()
-
-                    if (runningDigest != latestDigest) {
-                        echo "New frontend image found, redeploying..."
-                        sh "docker compose -f ${WORKSPACE}/docker-compose.server.yml up -d frontend"
-                    } else {
-                        echo "Frontend image is up-to-date, skipping deployment."
-                    }
+        stage('Deploy Containers') {
+            steps {
+                script {
+                    echo "Deploying backend and frontend with latest tags..."
+                    sh "docker compose -f ${COMPOSE_FILE} pull"
+                    sh "docker compose -f ${COMPOSE_FILE} up -d"
                 }
             }
         }
@@ -63,7 +57,7 @@ pipeline {
 
     post {
         always {
-            echo 'Deployment check finished'
+            echo 'Deployment finished'
         }
     }
 }
