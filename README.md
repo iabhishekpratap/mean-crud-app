@@ -16,14 +16,22 @@ The application consists of:
 ## 📁 Repository Structure
 
 ```
+MEAN-CRUD-APP/
 ├── backend/
-│   └── Dockerfile
-|    |__ testing-webhook-trigger 
+│   ├── Dockerfile
+│   └── (backend code)
+│   └── testing-webhook-trigger        # test file for webhook backend
 ├── frontend/
-│   └── Dockerfile
-|   |__ testing-webhook
-|__ 
-└── README.md
+│   ├── Dockerfile
+│   └── (frontend code)
+│   └── testing-webhook                # test file for webhook frontend
+├── docker-compose.yml                 # Local development
+├── docker-compose.server.yml          # Server deployment
+├── Jenkinsfile.docker-push            # CI: Build and push images to DockerHub
+├── Jenkinsfile.deploy-app             # CD: Deploy application on server 
+├── nginx-default.conf                 # Nginx reverse proxy config file
+├── README.md
+└── testing-webhook                    # Test file for webhook (github)
 ```
 
 ## 🚀 Quick Start
