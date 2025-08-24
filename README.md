@@ -136,7 +136,7 @@ The repository includes screenshots of:
 ![CI Pipeline Run](./screenshots%20/image_9.png)
 
 
-- Nginx setup and infrastructure details
+- Nginx
 
 ![CI Pipeline Run](./screenshots%20/image_1.png)
 ![CI Pipeline Run](./screenshots%20/image_6.png)
