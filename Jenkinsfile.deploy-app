@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        BACKEND_REPO = 'iapsingh/mean-crud-app-backend'
+        FRONTEND_REPO = 'iapsingh/mean-crud-app-frontend'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/iabhishekpratap/mean-crud-app.git'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Check and Deploy Backend') {
+            steps {
+                script {
+                    def latestTag = sh(script: "curl -s https://hub.docker.com/v2/repositories/${BACKEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
+                    echo "Latest backend tag: ${latestTag}"
+
+                    def runningDigest = sh(script: "docker inspect --format='{{index .RepoDigests 0}}' backend || echo 'none'", returnStdout: true).trim()
+
+                    def latestDigest = sh(script: "docker pull ${BACKEND_REPO}:${latestTag} | grep Digest | awk '{print \$2}'", returnStdout: true).trim()
+
+                    if (runningDigest != latestDigest) {
+                        echo "New backend image found, redeploying..."
+                        sh "docker compose -f ${WORKSPACE}/docker-compose.server.yml up -d backend"
+                    } else {
+                        echo "Backend image is up-to-date, skipping deployment."
+                    }
+                }
+            }
+        }
+
+        stage('Check and Deploy Frontend') {
+            steps {
+                script {
+                    def latestTag = sh(script: "curl -s https://hub.docker.com/v2/repositories/${FRONTEND_REPO}/tags?page_size=1 | jq -r '.results[0].name'", returnStdout: true).trim()
+                    echo "Latest frontend tag: ${latestTag}"
+
+                    def runningDigest = sh(script: "docker inspect --format='{{index .RepoDigests 0}}' frontend || echo 'none'", returnStdout: true).trim()
+
+                    def latestDigest = sh(script: "docker pull ${FRONTEND_REPO}:${latestTag} | grep Digest | awk '{print \$2}'", returnStdout: true).trim()
+
+                    if (runningDigest != latestDigest) {
+                        echo "New frontend image found, redeploying..."
+                        sh "docker compose -f ${WORKSPACE}/docker-compose.server.yml up -d frontend"
+                    } else {
+                        echo "Frontend image is up-to-date, skipping deployment."
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Deployment check finished'
+        }
+    }
+}
