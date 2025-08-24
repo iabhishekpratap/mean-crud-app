@@ -95,14 +95,51 @@ docker-compose down -v
 ## 📊 Screenshots
 
 The repository includes screenshots of:
+
 - Jenkins pipeline configuration and execution
+
+![CI Pipeline Run](./screenshots%20/image_13.png)
+![CI Pipeline Run](./screenshots%20/image_14.png)
+
+
+- Webhook
+
+![CI Pipeline Run](./screenshots%20/image_12.png)
+
+
+- DockerHub
+
+![CI Pipeline Run](./screenshots%20/image_2.png)
+![CI Pipeline Run](./screenshots%20/image_3.png)
+
+
+- DockerCompose
+
 ![CI Pipeline Run](./screenshots%20/image_5.png)
 
 
+- AWS 
+
+![CI Pipeline Run](./screenshots%20/image_4.png)
+
 
 - Docker image build and push process
+
+![CI Pipeline Run](./screenshots%20/image_10.png)
+![CI Pipeline Run](./screenshots%20/image_11.png)
+
+
 - Application deployment and working UI
+
+![CI Pipeline Run](./screenshots%20/image_7.png)
+![CI Pipeline Run](./screenshots%20/image_8.png)
+![CI Pipeline Run](./screenshots%20/image_9.png)
+
+
 - Nginx setup and infrastructure details
+
+![CI Pipeline Run](./screenshots%20/image_1.png)
+![CI Pipeline Run](./screenshots%20/image_6.png)
 
 
 ##  Support
